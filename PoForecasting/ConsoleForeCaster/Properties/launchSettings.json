@@ -2,7 +2,7 @@
   "profiles": {
     "ConsoleForeCaster": {
       "commandName": "Project",
-      "commandLineArgs": "E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\po.csv E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\cpi.csv 888012 6 USD"
+      "commandLineArgs": "--po \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\po.csv\" --cpi \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\cpi.csv\" --part 888012 --months 6 --currency USD --log true --confidence 0.95"
     }
   }
 }
