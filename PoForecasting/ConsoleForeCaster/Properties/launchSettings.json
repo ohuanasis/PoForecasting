@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConsoleForeCaster": {
+      "commandName": "Project",
+      "commandLineArgs": "E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\po.csv E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\cpi.csv 888012 6 USD"
+    }
+  }
+}
