@@ -1,12 +1,7 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\PoForecasting\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{35ACD04F-5F58-4303-8491-E8FA21D1D0CF}|ConsoleForeCaster\\ConsoleForeCaster.csproj|e:\\ghprojects\\personal\\poforecasting\\poforecasting\\consoleforecaster\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{35ACD04F-5F58-4303-8491-E8FA21D1D0CF}|ConsoleForeCaster\\ConsoleForeCaster.csproj|solutionrelative:consoleforecaster\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -14,7 +9,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": -1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -35,19 +30,6 @@
             {
               "$type": "Bookmark",
               "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\PoForecasting\\ConsoleForeCaster\\Program.cs",
-              "RelativeDocumentMoniker": "ConsoleForeCaster\\Program.cs",
-              "ToolTip": "E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\PoForecasting\\ConsoleForeCaster\\Program.cs",
-              "RelativeToolTip": "ConsoleForeCaster\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-21T20:41:58.027Z",
-              "EditorCaption": ""
             }
           ]
         },

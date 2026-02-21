@@ -1,0 +1,33 @@
+tables to gather data from:
+1-pop_headers
+2-pop_lines
+
+generate csv file with po data last 10 years
+SELECT 
+  PH.PO_NUMBER, --CHAR(10 BYTE) not null
+  PH.ORDER_DATE, --DATE
+  EXTRACT(YEAR FROM PH.ORDER_DATE) THEYEAR, --NUMBER not null
+  EXTRACT(MONTH FROM PH.ORDER_DATE) THEMONTH, --NUMBER not null
+  PL.PART_CODE, --CHAR(15 BYTE) not null
+  PL.IC_NOMINATED_QTY, --NUMBER(20,6) not null
+  PL.IC_NOMINATED_UNIT,--CHAR(4 BYTE) not null
+  ROUND(PH.TOTAL_ORDER_VALUE/NULLIF(PL.IC_NOMINATED_QTY, 0), 4) PRICE_PER_UNIT, --NUMBER
+  PH.TOTAL_ORDER_VALUE, --NUMBER(38,15) not null
+  PH.SYS_CURRENCY_CODE --CHAR(6 BYTE) not null
+FROM POP_HEADERS PH
+JOIN POP_LINES PL ON PH.COMPANY_CODE = PL.COMPANY_CODE 
+  AND PH.DIVISION = PL.DIVISION 
+  AND PH.PO_NUMBER = PL.PO_NUMBER
+WHERE PL.PO_LINE_TYPE = 'S' 
+    AND PH.ORDER_DATE >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -120)
+    AND PH.ORDER_DATE < TRUNC(SYSDATE, 'MM')
+ORDER BY PH.ORDER_DATE;
+
+downloaded the Consumer Price Index for All Urban Consumers: All Items in U.S. City Average (CPIAUCSL) from https://fred.stlouisfed.org/series/CPIAUCSL
+in csvformat created a table called UN_HISTORICAL_CPI
+later to create table with cpi data
+CREATE TABLE UN_CPI_DATA (
+    OBSERVATION_DATE DATE PRIMARY KEY,
+    CPIAUCSL NUMBER(10,3)
+);
+
