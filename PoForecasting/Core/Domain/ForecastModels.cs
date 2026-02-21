@@ -20,7 +20,22 @@
 
     public sealed class ForecastDiagnostics
     {
+        // Coverage
+        public DateTime? FirstPoMonth { get; init; }
+        public DateTime? LastPoMonth { get; init; }
+
+        public DateTime? FirstCpiMonth { get; init; }
+        public DateTime? LastCpiMonth { get; init; }
+
+        public DateTime? FirstAlignedMonth { get; init; }
+        public DateTime? LastAlignedMonth { get; init; }
+
+        // Counts
+        public int MonthlyPointsBeforeJoin { get; init; }
         public int MonthlyPointsUsed { get; init; }
+        public int MonthsDroppedDueToMissingCpi { get; init; }
+
+        // Model info
         public decimal BaseCpi { get; init; }
         public string Notes { get; init; } = "";
         public SsaParams PriceSsa { get; init; } = new();
