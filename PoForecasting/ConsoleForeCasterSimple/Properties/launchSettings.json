@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConsoleForeCasterSimple": {
+      "commandName": "Project",
+      "commandLineArgs": "--po \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\po.csv\" --cpi \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\cpi.csv\" --part 888012 --months 6"
+    }
+  }
+}
