@@ -11,12 +11,4 @@
     <PackageReference Include="Microsoft.ML.TimeSeries" Version="5.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Abstractions\" />
-    <Folder Include="Domain\" />
-    <Folder Include="Infrastructure\Csv\" />
-    <Folder Include="Infrastructure\Oracle\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>
