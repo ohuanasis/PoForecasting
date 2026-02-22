@@ -25,9 +25,23 @@ namespace ConsoleForeCasterSimple
                 ConfidenceLevel = 0.95f
             };
 
+            // Repos
             var poRepo = new CsvPurchaseOrderRepository(parsed.PoPath!);
             var cpiRepo = new CsvCpiRepository(parsed.CpiPath!);
+
+            // Service
             var svc = new PriceForecastService(poRepo, cpiRepo);
+
+            // Build the monthly nominal history so we can show the last 10 purchases (or less)
+            // Note: this is "monthly average nominal PRICE_PER_UNIT" for the part code, filtered to USD
+            var poLines = poRepo.GetLines(parsed.PartCode!, DefaultCurrency);
+            var monthlyNominal = MonthlySeriesBuilder.BuildMonthlyAvgPrice(poLines);
+
+            var lastHistory = monthlyNominal
+                .OrderByDescending(x => x.Month)
+                .Take(10)
+                .OrderBy(x => x.Month)
+                .ToList();
 
             // Current month normalized to first-of-month
             var currentMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
@@ -50,11 +64,11 @@ namespace ConsoleForeCasterSimple
             var lastTrainingMonth = probe.LastTrainingMonth;
 
             int monthsGap = MonthsBetween(lastTrainingMonth, currentMonth);
-            if (monthsGap < 0) monthsGap = 0; // if training is ahead of currentMonth (rare), don’t go negative
+            if (monthsGap < 0) monthsGap = 0;
 
             int horizonNeeded = checked(monthsGap + parsed.MonthsAhead);
 
-            // Now run the real forecast with enough horizon to reach "months ahead of now"
+            // Run forecast far enough to reach "months ahead of now"
             var result = svc.ForecastNominalPriceNextMonths(
                 parsed.PartCode!,
                 months: horizonNeeded,
@@ -103,6 +117,23 @@ namespace ConsoleForeCasterSimple
             //{
             //    Console.WriteLine($"{p.Month:yyyy-MM-dd}  nominal={p.NominalForecast:F4}  95%=[{p.Lower95Nominal:F4}, {p.Upper95Nominal:F4}]  CPI={p.CpiForecast:F3}  real={p.RealForecast:F4}");
             //}
+
+            Console.WriteLine($"---- Previous purchase prices for Part Code {parsed.PartCode} (Price per Unit) ----");
+
+            if (lastHistory.Count == 0)
+            {
+                Console.WriteLine("No purchase history found for this part code (after currency filter).");
+                Console.WriteLine();
+            }
+            else
+            {
+                foreach (var h in lastHistory)
+                {
+                    Console.WriteLine($"{h.Month:yyyy-MM-dd}  Price Per Unit={(double)h.AvgNominalPrice:F4}");
+                }
+                Console.WriteLine();
+            }
+
 
             Console.WriteLine($"---- Forecast Price for Part Code {result.PartCode} (Nominal PRICE_PER_UNIT + Expected Inflation) ----");
 
