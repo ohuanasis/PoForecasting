@@ -135,7 +135,7 @@ namespace ConsoleForeCasterSimple
             }
 
 
-            Console.WriteLine($"---- Forecast Price for Part Code {result.PartCode} (Nominal PRICE_PER_UNIT + Expected Inflation) ----");
+            Console.WriteLine($"---- Forecast Price for Part Code {result.PartCode} (Nominal PRICE_PER_UNIT + Expected Inflation) in the next {parsed.MonthsAhead} months ----");
 
             if (displayPoints.Count == 0)
             {
