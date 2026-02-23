@@ -36,13 +36,15 @@
       "commandName": "Docker",
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
       "environmentVariables": {
+		"ASPNETCORE_ENVIRONMENT": "Docker",
         "ASPNETCORE_HTTPS_PORTS": "8081",
         "ASPNETCORE_HTTP_PORTS": "8080"
       },
       "publishAllPorts": false,
 	  "httpPort": 29295,
       "sslPort": 29296,
-      "useSSL": false
+      "useSSL": false,
+	  "containerRunArguments": "-v \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data:/data:ro\""
     },
     "IIS Express": {
       "commandName": "IISExpress",
