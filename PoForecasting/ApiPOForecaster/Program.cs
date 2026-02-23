@@ -29,7 +29,13 @@ namespace ApiPOForecaster
                 app.Environment.IsEnvironment("DevelopmentHTTPS") || 
                 app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                app.MapOpenApi(); // This generates the /openapi/v1.json
+    
+                // This adds the visual webpage
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/openapi/v1.json", "v1");
+                });
             }
 
             // 2. Surgical HTTPS Redirection

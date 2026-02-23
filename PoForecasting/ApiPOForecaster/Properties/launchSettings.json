@@ -54,7 +54,7 @@
 	"IIS ExprDev": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-	  "launchUrl": "http://localhost:42131",
+	  "launchUrl": "http://localhost:42131/swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "DevelopmentHTTP"
       }
