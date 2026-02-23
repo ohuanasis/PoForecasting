@@ -1,0 +1,12 @@
+services:
+  apipoforecaster:
+    container_name: apipoforecaster
+    build:
+      context: .
+      dockerfile: ApiPOForecaster/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+    ports:
+      - "29295:8080"
+    volumes:
+      - "E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data:C:\\data:ro"

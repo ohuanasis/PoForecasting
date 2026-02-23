@@ -1,0 +1,23 @@
+Powershell Commnads:
+
+directly against the dockerfile:
+
+1-)cd E:\GHPROJECTS\PERSONAL\PoForecasting\PoForecasting
+
+2-)docker build -t apipoforecaster -f "ApiPOForecaster\Dockerfile" .
+
+using docker-compose:
+
+1-)cd E:\GHPROJECTS\PERSONAL\PoForecasting\PoForecasting
+
+2-)docker compose up --build
+
+3-) docker compose down
+
+if you change the csv files just do the following command:
+
+docker compose restart
+
+if you change the code then run it in prod mode:
+
+docker compose up --build -d
