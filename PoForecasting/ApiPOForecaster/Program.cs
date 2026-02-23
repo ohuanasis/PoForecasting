@@ -17,8 +17,7 @@ namespace ApiPOForecaster
                 .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
             // Bind file paths from config
-            builder.Services.Configure<DataFilesOptions>(
-                builder.Configuration.GetSection("DataFiles"));
+            builder.Services.Configure<DataFilesOptions>(builder.Configuration.GetSection("DataFiles"));
 
             // OpenAPI (built-in .NET 9)
             builder.Services.AddOpenApi();
