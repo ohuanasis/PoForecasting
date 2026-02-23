@@ -1,7 +1,7 @@
-
 using Core.Domain;
 using Core.Infrastructure.Csv;
 using Core.Services;
+using Microsoft.Extensions.Options;
 
 namespace ApiPOForecaster
 {
@@ -11,7 +11,7 @@ namespace ApiPOForecaster
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Ensure deterministic config layering
+            // Ensure deterministic config layering (do this BEFORE binding options)
             builder.Configuration
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
@@ -20,7 +20,7 @@ namespace ApiPOForecaster
             builder.Services.Configure<DataFilesOptions>(
                 builder.Configuration.GetSection("DataFiles"));
 
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+            // OpenAPI (built-in .NET 9)
             builder.Services.AddOpenApi();
 
             // Explicitly tell the app that the HTTPS port is 5017
@@ -31,22 +31,25 @@ namespace ApiPOForecaster
 
             var app = builder.Build();
 
-            // 1. Map OpenAPI for both Dev environments
+            // Map OpenAPI for Dev environments
             if (app.Environment.IsEnvironment("DevelopmentHTTP") ||
                 app.Environment.IsEnvironment("DevelopmentHTTPS") ||
                 app.Environment.IsDevelopment())
             {
                 app.MapOpenApi(); // This generates the /openapi/v1.json
 
-                // This adds the visual webpage
+                // NOTE:
+                // app.UseSwaggerUI(...) requires Swashbuckle.
+                // If you have Swashbuckle installed, keep this.
+                // Otherwise comment it out and just use /openapi/v1.json.
                 app.UseSwaggerUI(options =>
                 {
                     options.SwaggerEndpoint("/openapi/v1.json", "v1");
                 });
             }
 
-            // 2. Surgical HTTPS Redirection
-            // We ONLY redirect if we are in the HTTPS profile and NOT in Docker
+            // Surgical HTTPS Redirection:
+            // ONLY redirect if in HTTPS profile and NOT in Docker
             if (app.Environment.IsEnvironment("DevelopmentHTTPS") && !app.Environment.IsEnvironment("Docker"))
             {
                 app.UseHttpsRedirection();
@@ -55,11 +58,9 @@ namespace ApiPOForecaster
             // Health
             app.MapGet("/", () => Results.Ok(new { status = "ApiPOForecaster running" }));
 
-
-            // Forecast endpoint
-            // Example:
+            // Forecast endpoint:
             // GET /forecast?partCode=888012&monthsAhead=6
-            app.MapGet("/forecast", (string partCode, int monthsAhead, Microsoft.Extensions.Options.IOptions<DataFilesOptions> files) =>
+            app.MapGet("/forecast", (string partCode, int monthsAhead, IOptions<DataFilesOptions> files) =>
             {
                 if (string.IsNullOrWhiteSpace(partCode))
                     return Results.BadRequest(new { error = "partCode is required." });
@@ -119,7 +120,6 @@ namespace ApiPOForecaster
                 }
                 catch (Exception ex)
                 {
-                    // Typical: not enough history for part
                     return Results.BadRequest(new { error = ex.Message });
                 }
 
@@ -202,7 +202,6 @@ namespace ApiPOForecaster
             .Produces<ForecastResponseDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status500InternalServerError);
-
 
             app.Run();
         }
