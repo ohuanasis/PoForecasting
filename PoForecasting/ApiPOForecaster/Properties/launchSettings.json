@@ -1,0 +1,72 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5016"
+    },
+	"httpDev": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "DevelopmentHTTP"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5016"
+    },
+    "https": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:5017;http://localhost:5016"
+    },
+	"httpsDev": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "DevelopmentHTTPS"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:5017;http://localhost:5016"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "environmentVariables": {
+        "ASPNETCORE_HTTPS_PORTS": "8081",
+        "ASPNETCORE_HTTP_PORTS": "8080"
+      },
+      "publishAllPorts": false,
+	  "httpPort": 29295,
+      "sslPort": 29296,
+      "useSSL": false
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+	"IIS ExprDev": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+	  "launchUrl": "http://localhost:42131",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "DevelopmentHTTP"
+      }
+    }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:42131/",
+      "sslPort": 44313
+    }
+  }
+}
