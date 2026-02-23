@@ -44,7 +44,7 @@
 	  "httpPort": 29295,
       "sslPort": 29296,
       "useSSL": false,
-	  "containerRunArguments": "-v \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data:/data:ro\""
+	  "containerRunArguments": "-v \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data:C:\\data:ro\""
     },
     "IIS Express": {
       "commandName": "IISExpress",

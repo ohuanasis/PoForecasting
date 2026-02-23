@@ -1,0 +1,5 @@
+Powershell Commnads:
+
+1-)cd E:\GHPROJECTS\PERSONAL\PoForecasting\PoForecasting
+
+2-)docker build -t apipoforecaster -f "ApiPOForecaster\Dockerfile" .
