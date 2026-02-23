@@ -11,15 +11,14 @@ namespace ApiPOForecaster
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Bind file paths from config
-            builder.Services.Configure<DataFilesOptions>(
-                builder.Configuration.GetSection("DataFiles"));
-
             // Ensure deterministic config layering
             builder.Configuration
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
+            // Bind file paths from config
+            builder.Services.Configure<DataFilesOptions>(
+                builder.Configuration.GetSection("DataFiles"));
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
