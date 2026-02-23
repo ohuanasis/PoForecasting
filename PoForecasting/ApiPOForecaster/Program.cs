@@ -37,10 +37,6 @@ namespace ApiPOForecaster
             {
                 app.MapOpenApi(); // This generates the /openapi/v1.json
 
-                // NOTE:
-                // app.UseSwaggerUI(...) requires Swashbuckle.
-                // If you have Swashbuckle installed, keep this.
-                // Otherwise comment it out and just use /openapi/v1.json.
                 app.UseSwaggerUI(options =>
                 {
                     options.SwaggerEndpoint("/openapi/v1.json", "v1");
