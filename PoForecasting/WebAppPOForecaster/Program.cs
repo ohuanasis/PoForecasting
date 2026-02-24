@@ -1,4 +1,5 @@
 using WebAppPOForecaster.Components;
+using WebAppPOForecaster.Services;
 
 namespace WebAppPOForecaster
 {
@@ -11,6 +12,17 @@ namespace WebAppPOForecaster
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            builder.Services.AddHttpClient<ForecastApiClient>(http =>
+            {
+                var baseUrl = builder.Configuration["ForecastApi:BaseUrl"];
+                if (string.IsNullOrWhiteSpace(baseUrl))
+                    throw new InvalidOperationException("Missing config value: ForecastApi:BaseUrl");
+
+                http.BaseAddress = new Uri(baseUrl);
+                http.Timeout = TimeSpan.FromSeconds(30);
+                http.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+            });
 
             var app = builder.Build();
 

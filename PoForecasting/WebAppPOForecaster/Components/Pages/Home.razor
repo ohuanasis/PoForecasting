@@ -1,7 +1,199 @@
 ﻿@page "/"
+@using WebAppPOForecaster.Models
+@inject Services.ForecastApiClient Api
 
-<PageTitle>Home</PageTitle>
+<PageTitle>PO Price Forecast</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>PO Price Forecast</h1>
 
-Welcome to your new app.
+<div class="card" style="padding: 12px; max-width: 920px;">
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+        <div style="flex:1; min-width:220px;">
+            <label>Part Code</label><br />
+            <input class="form-control" style="width:100%;"
+                   @bind="partCode" placeholder="e.g. 888012" />
+        </div>
+
+        <div style="width:160px;">
+            <label>Months Ahead</label><br />
+            <input class="form-control" type="number" min="1" max="60"
+                   @bind="monthsAhead" />
+        </div>
+
+        <button class="btn btn-primary" @onclick="RunForecast" disabled="@isLoading">
+            @(isLoading ? "Loading..." : "Forecast")
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert alert-danger" style="margin-top: 12px;">
+            @error
+        </div>
+    }
+</div>
+
+@if (result is not null)
+{
+    <div style="max-width: 920px; margin-top: 16px;">
+
+        <!-- Summary -->
+        <div class="card" style="padding: 12px;">
+            <div style="display:flex; gap:24px; flex-wrap:wrap;">
+                <div>
+                    <div><b>Part Code:</b> @result.PartCode</div>
+                    <div><b>Today:</b> @result.Today.ToString("yyyy-MM-dd")</div>
+                    <div><b>Current Month:</b> @result.CurrentMonth.ToString("yyyy-MM-dd")</div>
+                    <div><b>Last Training Month:</b> @result.LastTrainingMonth.ToString("yyyy-MM-dd")</div>
+                </div>
+
+                @if (result.Requested is not null)
+                {
+                    <div>
+                        <div><b>Months Ahead:</b> @result.Requested.MonthsAhead</div>
+                        <div><b>Start Month:</b> @result.Requested.StartMonth.ToString("yyyy-MM-dd")</div>
+                        <div><b>End Month:</b> @result.Requested.EndMonth.ToString("yyyy-MM-dd")</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Data Coverage -->
+        @if (result.DataCoverage is not null)
+        {
+            <h3 style="margin-top: 16px;">Data Coverage</h3>
+
+            <table class="table table-sm">
+                <tbody>
+                    <tr>
+                        <td><b>PO Range</b></td>
+                        <td>@Fmt(result.DataCoverage.PoRangeStart) → @Fmt(result.DataCoverage.PoRangeEnd)</td>
+                    </tr>
+                    <tr>
+                        <td><b>CPI Range</b></td>
+                        <td>@Fmt(result.DataCoverage.CpiRangeStart) → @Fmt(result.DataCoverage.CpiRangeEnd)</td>
+                    </tr>
+                    <tr>
+                        <td><b>Aligned</b></td>
+                        <td>@Fmt(result.DataCoverage.AlignedStart) → @Fmt(result.DataCoverage.AlignedEnd)</td>
+                    </tr>
+                    <tr>
+                        <td><b>Months before join</b></td>
+                        <td>@result.DataCoverage.MonthsBeforeJoin</td>
+                    </tr>
+                    <tr>
+                        <td><b>Months after join</b></td>
+                        <td>@result.DataCoverage.MonthsAfterJoin</td>
+                    </tr>
+                    <tr>
+                        <td><b>Dropped (no CPI)</b></td>
+                        <td>@result.DataCoverage.DroppedNoCpi</td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+
+        <!-- Previous Purchase Prices -->
+        @if (result.PreviousPurchasePrices is not null && result.PreviousPurchasePrices.Count > 0)
+        {
+            <h3 style="margin-top: 16px;">Previous Purchase Prices</h3>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th style="text-align:right;">Price / Unit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in result.PreviousPurchasePrices.OrderBy(x => x.Month))
+                    {
+                        <tr>
+                            <td>@Fmt(p.Month)</td>
+                            <td style="text-align:right;">@FmtMoney(p.PricePerUnit)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        <!-- Forecast Prices -->
+        @if (result.ForecastPrices is not null && result.ForecastPrices.Count > 0)
+        {
+            <h3 style="margin-top: 16px;">Forecast Prices</h3>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th style="text-align:right;">Predicted Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var f in result.ForecastPrices.OrderBy(x => x.Month))
+                    {
+                        <tr>
+                            <td>@Fmt(f.Month)</td>
+                            <td style="text-align:right;">@FmtMoney(f.PricePrediction)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        <!-- Defaults -->
+        @if (result.Defaults is not null)
+        {
+            <h3 style="margin-top: 16px;">Model Defaults</h3>
+            <table class="table table-sm">
+                <tbody>
+                    <tr>
+                        <td><b>Currency</b></td>
+                        <td>@result.Defaults.Currency</td>
+                    </tr>
+                    <tr>
+                        <td><b>Use Log Transform</b></td>
+                        <td>@(result.Defaults.UseLogTransform ? "Yes" : "No")</td>
+                    </tr>
+                    <tr>
+                        <td><b>Confidence Level</b></td>
+                        <td>@(result.Defaults.ConfidenceLevel)</td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+    </div>
+}
+
+@code {
+    private string partCode = "888012";
+    private int monthsAhead = 6;
+
+    private bool isLoading;
+    private string? error;
+    private ForecastResponseDto? result;
+
+    private async Task RunForecast()
+    {
+        error = null;
+        result = null;
+
+        try
+        {
+            isLoading = true;
+            result = await Api.GetForecastAsync(partCode, monthsAhead);
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private static string Fmt(DateTime dt) => dt.ToString("yyyy-MM-dd");
+
+    private static string FmtMoney(decimal value) => value.ToString("0.####");
+}
