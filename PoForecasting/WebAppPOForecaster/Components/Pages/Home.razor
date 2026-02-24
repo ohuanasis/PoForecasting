@@ -6,176 +6,240 @@
 
 <div class="page-container">
 
-    <h1>PO Price Forecast</h1>
+	<h1>PO Price Forecast</h1>
 
-    <!-- INPUT CARD -->
-    <div class="app-card">
-        <div class="form-row">
+	<!-- INPUT CARD -->
+	<div class="app-card">
+		<div class="form-row">
 
-            <div class="form-group">
-                <label>Part Code</label>
-                <input class="form-control"
-                       @bind="partCode" />
-            </div>
+			<div class="form-group">
+				<label>Part Code</label>
+				<input class="form-control"
+					   @bind="partCode" />
+			</div>
 
-            <div class="form-group">
-                <label>Months Ahead</label>
-                <input class="form-control"
-                       type="number"
-                       min="1"
-                       max="60"
-                       @bind="monthsAhead" />
-            </div>
+			<div class="form-group">
+				<label>Months Ahead</label>
+				<input class="form-control"
+					   type="number"
+					   min="1"
+					   max="60"
+					   @bind="monthsAhead" />
+			</div>
 
-            <button class="btn btn-primary"
-                    @onclick="RunForecast"
-                    disabled="@isLoading">
-                @(isLoading ? "Loading..." : "Forecast")
-            </button>
+			<button class="btn btn-primary"
+					@onclick="RunForecast"
+					disabled="@isLoading">
+				@(isLoading ? "Loading..." : "Forecast")
+			</button>
 
-        </div>
+		</div>
 
-        @if (!string.IsNullOrWhiteSpace(error))
-        {
-            <div class="app-alert">
-                @error
-            </div>
-        }
-    </div>
+		@if (!string.IsNullOrWhiteSpace(error))
+		{
+			<div class="app-alert">
+				@error
+			</div>
+		}
+	</div>
 
-    @if (result is not null)
-    {
-        <!-- SUMMARY -->
-        <h2 class="section-title">Summary</h2>
-        <div class="app-card">
-            <div class="summary-grid">
-                <div class="metric-box">
-                    <div class="metric-label">Part Code</div>
-                    <div class="metric-value">@result.PartCode</div>
-                </div>
+	@if (result is not null)
+	{
+		<!-- STACKED SECTIONS (consistent spacing between cards) -->
+		<div class="stack">
 
-                <div class="metric-box">
-                    <div class="metric-label">Last Training Month</div>
-                    <div class="metric-value">
-                        @result.LastTrainingMonth.ToString("yyyy-MM")
-                    </div>
-                </div>
+			<!-- SUMMARY -->
+			<div>
+				<h2 class="section-title">Summary</h2>
+				<div class="app-card">
+					<div class="summary-grid">
 
-                <div class="metric-box">
-                    <div class="metric-label">Forecast Range</div>
-                    <div class="metric-value">
-                        @result.Requested?.StartMonth.ToString("yyyy-MM")
-                        →
-                        @result.Requested?.EndMonth.ToString("yyyy-MM")
-                    </div>
-                </div>
+						<div class="metric-box">
+							<div class="metric-label">Part Code</div>
+							<div class="metric-value">@result.PartCode</div>
+						</div>
 
-                <div class="metric-box">
-                    <div class="metric-label">Currency</div>
-                    <div class="metric-value">@result.Defaults?.Currency</div>
-                </div>
-            </div>
-        </div>
+						<div class="metric-box">
+							<div class="metric-label">Today</div>
+							<div class="metric-value">@result.Today.ToString("yyyy-MM-dd")</div>
+						</div>
 
-        <!-- DATA COVERAGE -->
-        <h2 class="section-title">Data Coverage</h2>
-        <div class="app-card">
-            <table class="app-table">
-                <tbody>
-                    <tr>
-                        <td>PO Range</td>
-                        <td>@Fmt(result.DataCoverage!.PoRangeStart) → @Fmt(result.DataCoverage.PoRangeEnd)</td>
-                    </tr>
-                    <tr>
-                        <td>CPI Range</td>
-                        <td>@Fmt(result.DataCoverage.CpiRangeStart) → @Fmt(result.DataCoverage.CpiRangeEnd)</td>
-                    </tr>
-                    <tr>
-                        <td>Aligned Range</td>
-                        <td>@Fmt(result.DataCoverage.AlignedStart) → @Fmt(result.DataCoverage.AlignedEnd)</td>
-                    </tr>
-                    <tr>
-                        <td>Months Used</td>
-                        <td>@result.DataCoverage.MonthsAfterJoin</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+						<div class="metric-box">
+							<div class="metric-label">Current Month</div>
+							<div class="metric-value">@result.CurrentMonth.ToString("yyyy-MM")</div>
+						</div>
 
-        <!-- PREVIOUS PRICES -->
-        <h2 class="section-title">Previous Purchase Prices</h2>
-        <div class="app-card">
-            <table class="app-table">
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th class="text-right">Price / Unit</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var p in result.PreviousPurchasePrices.OrderBy(x => x.Month))
-                    {
-                        <tr>
-                            <td>@Fmt(p.Month)</td>
-                            <td class="text-right">@FmtMoney(p.PricePerUnit)</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+						<div class="metric-box">
+							<div class="metric-label">Last Training Month</div>
+							<div class="metric-value">@result.LastTrainingMonth.ToString("yyyy-MM")</div>
+						</div>
 
-        <!-- FORECAST -->
-        <h2 class="section-title">Forecast Prices</h2>
-        <div class="app-card">
-            <table class="app-table">
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th class="text-right">Predicted Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var f in result.ForecastPrices.OrderBy(x => x.Month))
-                    {
-                        <tr>
-                            <td>@Fmt(f.Month)</td>
-                            <td class="text-right">@FmtMoney(f.PricePrediction)</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
+						@if (result.Requested is not null)
+						{
+							<div class="metric-box">
+								<div class="metric-label">Months Ahead</div>
+								<div class="metric-value">@result.Requested.MonthsAhead</div>
+							</div>
+
+							<div class="metric-box">
+								<div class="metric-label">Forecast Range</div>
+								<div class="metric-value">
+									@result.Requested.StartMonth.ToString("yyyy-MM")
+									→
+									@result.Requested.EndMonth.ToString("yyyy-MM")
+								</div>
+							</div>
+						}
+
+						@if (result.Defaults is not null)
+						{
+							<div class="metric-box">
+								<div class="metric-label">Currency</div>
+								<div class="metric-value">@result.Defaults.Currency</div>
+							</div>
+
+							<div class="metric-box">
+								<div class="metric-label">Confidence</div>
+								<div class="metric-value">@FmtPct(result.Defaults.ConfidenceLevel)</div>
+							</div>
+						}
+
+					</div>
+				</div>
+			</div>
+
+			<!-- DATA COVERAGE -->
+			@if (result.DataCoverage is not null)
+			{
+				<div>
+					<h2 class="section-title">Data Coverage</h2>
+					<div class="app-card">
+						<table class="app-table">
+							<tbody>
+								<tr>
+									<td><b>PO Range</b></td>
+									<td>@Fmt(result.DataCoverage.PoRangeStart) → @Fmt(result.DataCoverage.PoRangeEnd)</td>
+								</tr>
+								<tr>
+									<td><b>CPI Range</b></td>
+									<td>@Fmt(result.DataCoverage.CpiRangeStart) → @Fmt(result.DataCoverage.CpiRangeEnd)</td>
+								</tr>
+								<tr>
+									<td><b>Aligned Range</b></td>
+									<td>@Fmt(result.DataCoverage.AlignedStart) → @Fmt(result.DataCoverage.AlignedEnd)</td>
+								</tr>
+								<tr>
+									<td><b>Months before join</b></td>
+									<td>@result.DataCoverage.MonthsBeforeJoin</td>
+								</tr>
+								<tr>
+									<td><b>Months after join</b></td>
+									<td>@result.DataCoverage.MonthsAfterJoin</td>
+								</tr>
+								<tr>
+									<td><b>Dropped (no CPI)</b></td>
+									<td>@result.DataCoverage.DroppedNoCpi</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			}
+
+			<!-- PREVIOUS PRICES -->
+			@if (result.PreviousPurchasePrices is not null && result.PreviousPurchasePrices.Count > 0)
+			{
+				<div>
+					<h2 class="section-title">Previous Purchase Prices</h2>
+					<div class="app-card">
+						<table class="app-table">
+							<thead>
+								<tr>
+									<th>Month</th>
+									<th class="text-right">Price / Unit</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var p in result.PreviousPurchasePrices.OrderBy(x => x.Month))
+								{
+									<tr>
+										<td>@Fmt(p.Month)</td>
+										<td class="text-right">@FmtMoney(p.PricePerUnit)</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			}
+
+			<!-- FORECAST -->
+			@if (result.ForecastPrices is not null && result.ForecastPrices.Count > 0)
+			{
+				<div>
+					<h2 class="section-title">Forecast Prices</h2>
+					<div class="app-card">
+						<table class="app-table">
+							<thead>
+								<tr>
+									<th>Month</th>
+									<th class="text-right">Predicted Price</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var f in result.ForecastPrices.OrderBy(x => x.Month))
+								{
+									<tr>
+										<td>@Fmt(f.Month)</td>
+										<td class="text-right">@FmtMoney(f.PricePrediction)</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			}
+
+		</div>
+	}
 </div>
 
 @code {
-    private string partCode = "888012";
-    private int monthsAhead = 6;
+	private string partCode = "888012";
+	private int monthsAhead = 6;
 
-    private bool isLoading;
-    private string? error;
-    private ForecastResponseDto? result;
+	private bool isLoading;
+	private string? error;
+	private ForecastResponseDto? result;
 
-    private async Task RunForecast()
-    {
-        error = null;
-        result = null;
+	private async Task RunForecast()
+	{
+		error = null;
+		result = null;
 
-        try
-        {
-            isLoading = true;
-            result = await Api.GetForecastAsync(partCode, monthsAhead);
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
+		try
+		{
+			isLoading = true;
+			result = await Api.GetForecastAsync(partCode, monthsAhead);
+		}
+		catch (Exception ex)
+		{
+			error = ex.Message;
+		}
+		finally
+		{
+			isLoading = false;
+		}
+	}
 
-    private static string Fmt(DateTime dt) => dt.ToString("yyyy-MM-dd");
-    private static string FmtMoney(decimal value) => value.ToString("0.####");
+	private static string Fmt(DateTime dt) => dt.ToString("yyyy-MM-dd");
+
+	private static string FmtMoney(decimal value) => value.ToString("0.####");
+
+	private static string FmtPct(decimal value)
+	{
+		// API returns 0.95 => show as 95%
+		var pct = value * 100m;
+		return pct.ToString("0.##") + "%";
+	}
 }
