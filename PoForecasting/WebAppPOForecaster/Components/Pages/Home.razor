@@ -1,108 +1,115 @@
 ﻿@page "/"
 @using WebAppPOForecaster.Models
-@inject Services.ForecastApiClient Api
+@inject WebAppPOForecaster.Services.ForecastApiClient Api
 
 <PageTitle>PO Price Forecast</PageTitle>
 
-<h1>PO Price Forecast</h1>
+<div class="page-container">
 
-<div class="card" style="padding: 12px; max-width: 920px;">
-    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-        <div style="flex:1; min-width:220px;">
-            <label>Part Code</label><br />
-            <input class="form-control" style="width:100%;"
-                   @bind="partCode" placeholder="e.g. 888012" />
+    <h1>PO Price Forecast</h1>
+
+    <!-- INPUT CARD -->
+    <div class="app-card">
+        <div class="form-row">
+
+            <div class="form-group">
+                <label>Part Code</label>
+                <input class="form-control"
+                       @bind="partCode" />
+            </div>
+
+            <div class="form-group">
+                <label>Months Ahead</label>
+                <input class="form-control"
+                       type="number"
+                       min="1"
+                       max="60"
+                       @bind="monthsAhead" />
+            </div>
+
+            <button class="btn btn-primary"
+                    @onclick="RunForecast"
+                    disabled="@isLoading">
+                @(isLoading ? "Loading..." : "Forecast")
+            </button>
+
         </div>
 
-        <div style="width:160px;">
-            <label>Months Ahead</label><br />
-            <input class="form-control" type="number" min="1" max="60"
-                   @bind="monthsAhead" />
-        </div>
-
-        <button class="btn btn-primary" @onclick="RunForecast" disabled="@isLoading">
-            @(isLoading ? "Loading..." : "Forecast")
-        </button>
+        @if (!string.IsNullOrWhiteSpace(error))
+        {
+            <div class="app-alert">
+                @error
+            </div>
+        }
     </div>
 
-    @if (!string.IsNullOrWhiteSpace(error))
+    @if (result is not null)
     {
-        <div class="alert alert-danger" style="margin-top: 12px;">
-            @error
-        </div>
-    }
-</div>
-
-@if (result is not null)
-{
-    <div style="max-width: 920px; margin-top: 16px;">
-
-        <!-- Summary -->
-        <div class="card" style="padding: 12px;">
-            <div style="display:flex; gap:24px; flex-wrap:wrap;">
-                <div>
-                    <div><b>Part Code:</b> @result.PartCode</div>
-                    <div><b>Today:</b> @result.Today.ToString("yyyy-MM-dd")</div>
-                    <div><b>Current Month:</b> @result.CurrentMonth.ToString("yyyy-MM-dd")</div>
-                    <div><b>Last Training Month:</b> @result.LastTrainingMonth.ToString("yyyy-MM-dd")</div>
+        <!-- SUMMARY -->
+        <h2 class="section-title">Summary</h2>
+        <div class="app-card">
+            <div class="summary-grid">
+                <div class="metric-box">
+                    <div class="metric-label">Part Code</div>
+                    <div class="metric-value">@result.PartCode</div>
                 </div>
 
-                @if (result.Requested is not null)
-                {
-                    <div>
-                        <div><b>Months Ahead:</b> @result.Requested.MonthsAhead</div>
-                        <div><b>Start Month:</b> @result.Requested.StartMonth.ToString("yyyy-MM-dd")</div>
-                        <div><b>End Month:</b> @result.Requested.EndMonth.ToString("yyyy-MM-dd")</div>
+                <div class="metric-box">
+                    <div class="metric-label">Last Training Month</div>
+                    <div class="metric-value">
+                        @result.LastTrainingMonth.ToString("yyyy-MM")
                     </div>
-                }
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-label">Forecast Range</div>
+                    <div class="metric-value">
+                        @result.Requested?.StartMonth.ToString("yyyy-MM")
+                        →
+                        @result.Requested?.EndMonth.ToString("yyyy-MM")
+                    </div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-label">Currency</div>
+                    <div class="metric-value">@result.Defaults?.Currency</div>
+                </div>
             </div>
         </div>
 
-        <!-- Data Coverage -->
-        @if (result.DataCoverage is not null)
-        {
-            <h3 style="margin-top: 16px;">Data Coverage</h3>
-
-            <table class="table table-sm">
+        <!-- DATA COVERAGE -->
+        <h2 class="section-title">Data Coverage</h2>
+        <div class="app-card">
+            <table class="app-table">
                 <tbody>
                     <tr>
-                        <td><b>PO Range</b></td>
-                        <td>@Fmt(result.DataCoverage.PoRangeStart) → @Fmt(result.DataCoverage.PoRangeEnd)</td>
+                        <td>PO Range</td>
+                        <td>@Fmt(result.DataCoverage!.PoRangeStart) → @Fmt(result.DataCoverage.PoRangeEnd)</td>
                     </tr>
                     <tr>
-                        <td><b>CPI Range</b></td>
+                        <td>CPI Range</td>
                         <td>@Fmt(result.DataCoverage.CpiRangeStart) → @Fmt(result.DataCoverage.CpiRangeEnd)</td>
                     </tr>
                     <tr>
-                        <td><b>Aligned</b></td>
+                        <td>Aligned Range</td>
                         <td>@Fmt(result.DataCoverage.AlignedStart) → @Fmt(result.DataCoverage.AlignedEnd)</td>
                     </tr>
                     <tr>
-                        <td><b>Months before join</b></td>
-                        <td>@result.DataCoverage.MonthsBeforeJoin</td>
-                    </tr>
-                    <tr>
-                        <td><b>Months after join</b></td>
+                        <td>Months Used</td>
                         <td>@result.DataCoverage.MonthsAfterJoin</td>
-                    </tr>
-                    <tr>
-                        <td><b>Dropped (no CPI)</b></td>
-                        <td>@result.DataCoverage.DroppedNoCpi</td>
                     </tr>
                 </tbody>
             </table>
-        }
+        </div>
 
-        <!-- Previous Purchase Prices -->
-        @if (result.PreviousPurchasePrices is not null && result.PreviousPurchasePrices.Count > 0)
-        {
-            <h3 style="margin-top: 16px;">Previous Purchase Prices</h3>
-
-            <table class="table table-striped">
+        <!-- PREVIOUS PRICES -->
+        <h2 class="section-title">Previous Purchase Prices</h2>
+        <div class="app-card">
+            <table class="app-table">
                 <thead>
                     <tr>
                         <th>Month</th>
-                        <th style="text-align:right;">Price / Unit</th>
+                        <th class="text-right">Price / Unit</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -110,23 +117,21 @@
                     {
                         <tr>
                             <td>@Fmt(p.Month)</td>
-                            <td style="text-align:right;">@FmtMoney(p.PricePerUnit)</td>
+                            <td class="text-right">@FmtMoney(p.PricePerUnit)</td>
                         </tr>
                     }
                 </tbody>
             </table>
-        }
+        </div>
 
-        <!-- Forecast Prices -->
-        @if (result.ForecastPrices is not null && result.ForecastPrices.Count > 0)
-        {
-            <h3 style="margin-top: 16px;">Forecast Prices</h3>
-
-            <table class="table table-striped">
+        <!-- FORECAST -->
+        <h2 class="section-title">Forecast Prices</h2>
+        <div class="app-card">
+            <table class="app-table">
                 <thead>
                     <tr>
                         <th>Month</th>
-                        <th style="text-align:right;">Predicted Price</th>
+                        <th class="text-right">Predicted Price</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -134,36 +139,14 @@
                     {
                         <tr>
                             <td>@Fmt(f.Month)</td>
-                            <td style="text-align:right;">@FmtMoney(f.PricePrediction)</td>
+                            <td class="text-right">@FmtMoney(f.PricePrediction)</td>
                         </tr>
                     }
                 </tbody>
             </table>
-        }
-
-        <!-- Defaults -->
-        @if (result.Defaults is not null)
-        {
-            <h3 style="margin-top: 16px;">Model Defaults</h3>
-            <table class="table table-sm">
-                <tbody>
-                    <tr>
-                        <td><b>Currency</b></td>
-                        <td>@result.Defaults.Currency</td>
-                    </tr>
-                    <tr>
-                        <td><b>Use Log Transform</b></td>
-                        <td>@(result.Defaults.UseLogTransform ? "Yes" : "No")</td>
-                    </tr>
-                    <tr>
-                        <td><b>Confidence Level</b></td>
-                        <td>@(result.Defaults.ConfidenceLevel)</td>
-                    </tr>
-                </tbody>
-            </table>
-        }
-    </div>
-}
+        </div>
+    }
+</div>
 
 @code {
     private string partCode = "888012";
@@ -194,6 +177,5 @@
     }
 
     private static string Fmt(DateTime dt) => dt.ToString("yyyy-MM-dd");
-
     private static string FmtMoney(decimal value) => value.ToString("0.####");
 }

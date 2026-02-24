@@ -36,3 +36,302 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* ==========================================================
+   PO FORECASTER UI (added)
+   ========================================================== */
+
+body {
+    background: #f3f4f6;
+}
+
+.page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.section-title {
+    margin-top: 32px;
+    margin-bottom: 12px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.app-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+}
+
+/* Inputs */
+.form-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+    .form-group label {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #374151;
+    }
+
+/* Summary */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.metric-box {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.metric-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Tables */
+.app-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .app-table th {
+        text-align: left;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: #6b7280;
+        border-bottom: 2px solid #e5e7eb;
+        padding: 10px 8px;
+    }
+
+    .app-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .app-table tr:hover {
+        background-color: #f9fafb;
+    }
+
+.text-right {
+    text-align: right;
+}
+
+/* Error message area inside our cards */
+.app-alert {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 6px;
+    background-color: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+/* ==========================================================
+   BASE CONTROLS (no Bootstrap)
+   ========================================================== */
+
+/* Typography defaults (safe + light) */
+h1 {
+    font-size: 28px;
+    margin: 0 0 16px 0;
+    font-weight: 700;
+    color: #111827;
+}
+
+h2.section-title {
+    font-size: 18px;
+}
+
+/* Inputs */
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #111827;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+    .form-control:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+/* Buttons */
+.btn {
+    appearance: none;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.03s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    user-select: none;
+}
+
+    .btn:active {
+        transform: translateY(1px);
+    }
+
+    .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
+.btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.20);
+}
+
+    .btn-primary:hover:enabled {
+        background: #1d4ed8;
+    }
+
+    .btn-primary:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22), 0 6px 14px rgba(37, 99, 235, 0.20);
+    }
+
+/* Tables */
+.app-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .app-table th {
+        text-align: left;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: #6b7280;
+        border-bottom: 2px solid #e5e7eb;
+        padding: 10px 8px;
+    }
+
+    .app-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #f3f4f6;
+        color: #111827;
+        font-size: 14px;
+    }
+
+    .app-table tr:hover {
+        background-color: #f9fafb;
+    }
+
+.text-right {
+    text-align: right;
+}
+
+/* Cards + layout (if not already added above) */
+.page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.app-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.07);
+    border: 1px solid #e5e7eb;
+}
+
+.section-title {
+    margin-top: 26px;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* Form layout */
+.form-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+}
+
+    .form-group label {
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #374151;
+    }
+
+/* Summary blocks */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.metric-box {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.metric-value {
+    font-size: 16px;
+    font-weight: 800;
+    color: #111827;
+}
+
+/* Alert */
+.app-alert {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background-color: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    font-weight: 600;
+}
