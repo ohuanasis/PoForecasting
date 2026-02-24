@@ -1,6 +1,6 @@
 ﻿@page "/"
 @using WebAppPOForecaster.Models
-@inject WebAppPOForecaster.Services.ForecastApiClient Api
+@inject Services.ForecastApiClient Api
 
 <PageTitle>PO Price Forecast</PageTitle>
 
@@ -107,7 +107,7 @@
                         <!-- NEW: Unit -->
                         <div class="metric-box">
                             <div class="metric-label">Price Unit</div>
-                            <div class="metric-value">LBS/USD</div>
+                            <div class="metric-value">USD/LBS</div>
                         </div>
 
                     </div>
@@ -160,7 +160,7 @@
 
                     <!-- NEW: helper description -->
                     <div style="margin-bottom:10px; color:#6b7280; font-size:13px;">
-                        Showing the last <b>@Math.Min(10, result.PreviousPurchasePrices.Count)</b> recorded purchases (or fewer if less available). Unit: <b>LBS/USD</b>.
+                        Showing the last <b>@Math.Min(10, result.PreviousPurchasePrices.Count)</b> recorded purchases (or fewer if less available). Unit: <b>USD/LBS</b>.
                     </div>
 
                     <div class="app-card">
@@ -168,7 +168,7 @@
                             <thead>
                                 <tr>
                                     <th>Month</th>
-                                    <th class="text-right">Price / Unit (LBS/USD)</th>
+                                    <th class="text-right">Price / Unit (USD/LBS)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -193,7 +193,7 @@
 
                     <!-- NEW: helper description -->
                     <div style="margin-bottom:10px; color:#6b7280; font-size:13px;">
-                        Forecasted unit price in <b>LBS/USD</b>.
+                        Forecasted unit price in <b>USD/LBS</b>.
                     </div>
 
                     <div class="app-card">
@@ -201,7 +201,7 @@
                             <thead>
                                 <tr>
                                     <th>Month</th>
-                                    <th class="text-right">Predicted Price (LBS/USD)</th>
+                                    <th class="text-right">Predicted Price (USD/LBS)</th>
                                 </tr>
                             </thead>
                             <tbody>
