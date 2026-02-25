@@ -23,6 +23,25 @@ WHERE PL.PO_LINE_TYPE = 'S'
     AND PH.ORDER_DATE < TRUNC(SYSDATE, 'MM')
 ORDER BY PH.ORDER_DATE;
 
+
+CREATE TABLE PO_ORDER_ANALYSIS (
+    PO_NUMBER          CHAR(10 BYTE) NOT NULL,
+    ORDER_DATE         DATE NOT NULL,
+    THEYEAR            NUMBER NOT NULL,
+    THEMONTH           NUMBER NOT NULL,
+    PART_CODE          CHAR(15 BYTE) NOT NULL,
+    IC_NOMINATED_QTY   NUMBER(20,6) NOT NULL,
+    IC_NOMINATED_UNIT  CHAR(4 BYTE) NOT NULL,
+    PRICE_PER_UNIT     NUMBER(38,4),  -- Matching the ROUND(...,4) in query
+    TOTAL_ORDER_VALUE  NUMBER(38,15) NOT NULL,
+    SYS_CURRENCY_CODE  CHAR(6 BYTE) NOT NULL
+);
+
+-- Create indexes for better query performance
+CREATE INDEX IDX_PO_ORDER_ANALYSIS_DATE ON PO_ORDER_ANALYSIS(ORDER_DATE);
+CREATE INDEX IDX_PO_ORDER_ANALYSIS_YEAR_MONTH ON PO_ORDER_ANALYSIS(THEYEAR, THEMONTH);
+
+
 downloaded the Consumer Price Index for All Urban Consumers: All Items in U.S. City Average (CPIAUCSL) from https://fred.stlouisfed.org/series/CPIAUCSL
 in csvformat created a table called UN_HISTORICAL_CPI
 later to create table with cpi data
