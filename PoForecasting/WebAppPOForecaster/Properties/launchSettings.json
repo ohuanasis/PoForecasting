@@ -12,10 +12,24 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-	  "launchUrl": "http://localhost:7668/",
+      "launchUrl": "http://localhost:7668/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/",
+      "environmentVariables": {
+		"ASPNETCORE_ENVIRONMENT": "Docker",
+        "ASPNETCORE_HTTPS_PORTS": "8081",
+        "ASPNETCORE_HTTP_PORTS": "8080"
+      },
+	  "publishAllPorts": false,
+	  "httpPort": 29298,
+      "sslPort": 29299,
+      "useSSL": false
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json",

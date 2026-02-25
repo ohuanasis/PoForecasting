@@ -9,6 +9,11 @@ namespace WebAppPOForecaster
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Ensure deterministic config layering (do this BEFORE binding options)
+            builder.Configuration
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
@@ -31,6 +36,8 @@ namespace WebAppPOForecaster
             {
                 app.UseExceptionHandler("/Error");
             }
+
+            builder.WebHost.UseStaticWebAssets();
 
             app.UseAntiforgery();
 

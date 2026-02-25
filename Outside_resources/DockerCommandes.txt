@@ -1,5 +1,7 @@
 Powershell Commnads:
 
+*------------apipoforecaster--------------*
+
 directly against the dockerfile:
 
 1-)cd E:\GHPROJECTS\PERSONAL\PoForecasting\PoForecasting
@@ -21,3 +23,13 @@ docker compose restart
 if you change the code then run it in prod mode:
 
 docker compose up --build -d
+
+*------------webapppoforecaster--------------*
+
+directly against the dockerfile:
+
+1-)cd E:\GHPROJECTS\PERSONAL\PoForecasting\PoForecasting
+
+2-)docker build -t webapp-poforecaster:latest  -f "WebAppPOForecaster\Dockerfile" .
+
+3-)docker run -d -p 29300:8080 --name webapp-poforecaster -e ASPNETCORE_ENVIRONMENT=Docker webapp-poforecaster:latest
