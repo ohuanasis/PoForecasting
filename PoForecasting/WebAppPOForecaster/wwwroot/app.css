@@ -1,0 +1,241 @@
+h1:focus {
+    outline: none;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid #e50000;
+}
+
+.validation-message {
+    color: #e50000;
+}
+
+.blazor-error-boundary {
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }
+
+.darker-border-checkbox.form-check-input {
+    border-color: #929292;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* ==========================================================
+   PO FORECASTER UI (no Bootstrap)
+   ========================================================== */
+
+:root {
+    --bg: #f3f4f6;
+    --card: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --border2: #d1d5db;
+    --primary: #2563eb;
+    --primaryHover: #1d4ed8;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* Headings */
+h1 {
+    font-size: 28px;
+    margin: 0 0 16px 0;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.section-title {
+    margin-top: 26px;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1f2937;
+}
+
+/* Page layout */
+.page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+/* Card */
+.app-card {
+    background-color: var(--card);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.07);
+}
+
+/* Add consistent spacing between stacked blocks */
+.stack {
+    display: grid;
+    gap: 16px;
+}
+
+/* Form layout */
+.form-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+}
+
+    .form-group label {
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 6px;
+        color: #374151;
+    }
+
+/* Inputs */
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: #ffffff;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+/* Buttons */
+.btn {
+    appearance: none;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.03s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    user-select: none;
+}
+
+    .btn:active {
+        transform: translateY(1px);
+    }
+
+    .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
+.btn-primary {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.20);
+}
+
+    .btn-primary:hover:enabled {
+        background: var(--primaryHover);
+    }
+
+    .btn-primary:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22), 0 6px 14px rgba(37, 99, 235, 0.20);
+    }
+
+/* Summary grid */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.metric-box {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+}
+
+.metric-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.metric-value {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--text);
+}
+
+/* Tables */
+.app-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .app-table th {
+        text-align: left;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--muted);
+        border-bottom: 2px solid var(--border);
+        padding: 10px 8px;
+    }
+
+    .app-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #f3f4f6;
+        color: var(--text);
+        font-size: 14px;
+    }
+
+    .app-table tr:hover {
+        background-color: #f9fafb;
+    }
+
+.text-right {
+    text-align: right;
+}
+
+/* Alert */
+.app-alert {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background-color: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    font-weight: 700;
+}
