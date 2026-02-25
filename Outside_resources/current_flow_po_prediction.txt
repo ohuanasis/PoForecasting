@@ -45,8 +45,7 @@ CREATE INDEX IDX_PO_ORDER_ANALYSIS_YEAR_MONTH ON PO_ORDER_ANALYSIS(THEYEAR, THEM
 downloaded the Consumer Price Index for All Urban Consumers: All Items in U.S. City Average (CPIAUCSL) from https://fred.stlouisfed.org/series/CPIAUCSL
 in csvformat created a table called UN_HISTORICAL_CPI
 later to create table with cpi data
-CREATE TABLE UN_CPI_DATA (
+CREATE TABLE CPI_DATA (
     OBSERVATION_DATE DATE PRIMARY KEY,
     CPIAUCSL NUMBER(10,3)
 );
-
