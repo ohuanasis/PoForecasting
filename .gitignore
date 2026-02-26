@@ -59,3 +59,5 @@ nunit-*.xml
 /PoForecasting/.vs/PoForecasting/v17/.suo
 /PoForecasting/.vs
 /Outside_resources/data/po.csv
+/PoForecasting/ConsoleForeCaster/appsettings.Development.json
+/PoForecasting/ConsoleForeCasterSimple/appsettings.Development.json
