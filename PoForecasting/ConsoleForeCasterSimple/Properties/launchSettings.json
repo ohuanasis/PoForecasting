@@ -2,7 +2,10 @@
   "profiles": {
     "ConsoleForeCasterSimple": {
       "commandName": "Project",
-      "commandLineArgs": "--po \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\po.csv\" --cpi \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\cpi.csv\" --part 313875 --months 6"
+      "commandLineArgs": "--po \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\po.csv\" --cpi \"E:\\GHPROJECTS\\PERSONAL\\PoForecasting\\Outside_resources\\data\\cpi.csv\" --part 313875 --months 6",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
     }
   }
 }
