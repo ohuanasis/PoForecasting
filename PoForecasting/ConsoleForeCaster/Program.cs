@@ -1,6 +1,9 @@
-﻿using Core.Domain;
+﻿using Core.Abstractions;
+using Core.Domain;
 using Core.Infrastructure.Csv;
+using Core.Infrastructure.Oracle;
 using Core.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace ConsoleForeCaster
 {
@@ -8,6 +11,8 @@ namespace ConsoleForeCaster
     {
         static void Main(string[] args)
         {
+            var config = BuildConfig();
+
             var parsed = ParseArgs(args);
 
             if (!parsed.IsValid)
@@ -16,8 +21,7 @@ namespace ConsoleForeCaster
                 return;
             }
 
-            var poRepo = new CsvPurchaseOrderRepository(parsed.PoPath!);
-            var cpiRepo = new CsvCpiRepository(parsed.CpiPath!);
+            var (poRepo, cpiRepo) = CreateRepositories(config, parsed.PoPath, parsed.CpiPath);
 
             var svc = new PriceForecastService(poRepo, cpiRepo);
 
@@ -34,6 +38,47 @@ namespace ConsoleForeCaster
                 options);
 
             PrintResult(result);
+        }
+
+        // -------------------------------
+        // Configuration (appsettings.json)
+        // -------------------------------
+
+        private static IConfiguration BuildConfig()
+        {
+            return new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                .Build();
+        }
+
+        private static (IPurchaseOrderRepository PoRepo, ICpiRepository CpiRepo) CreateRepositories(
+            IConfiguration config,
+            string? poPathFromArgs,
+            string? cpiPathFromArgs)
+        {
+            var source = (config["DataSource"] ?? "Csv").Trim();
+
+            if (source.Equals("Oracle", StringComparison.OrdinalIgnoreCase))
+            {
+                var connStr = config["Oracle:ConnectionString"];
+                if (string.IsNullOrWhiteSpace(connStr))
+                    throw new InvalidOperationException("Missing Oracle:ConnectionString in appsettings.json");
+
+                return (new OraclePurchaseOrderRepository(connStr),
+                        new OracleCpiRepository(connStr));
+            }
+
+            // Default: CSV
+            // Prefer CLI args if provided; otherwise fall back to appsettings.json
+            var poPath = !string.IsNullOrWhiteSpace(poPathFromArgs) ? poPathFromArgs : config["Csv:PoPath"];
+            var cpiPath = !string.IsNullOrWhiteSpace(cpiPathFromArgs) ? cpiPathFromArgs : config["Csv:CpiPath"];
+
+            if (string.IsNullOrWhiteSpace(poPath) || string.IsNullOrWhiteSpace(cpiPath))
+                throw new InvalidOperationException("CSV mode requires Csv:PoPath and Csv:CpiPath in appsettings.json (or pass --po/--cpi).");
+
+            return (new CsvPurchaseOrderRepository(poPath),
+                    new CsvCpiRepository(cpiPath));
         }
 
         // -------------------------------
@@ -85,9 +130,8 @@ namespace ConsoleForeCaster
                 }
             }
 
+            // In CSV mode, --po and --cpi can come from appsettings.json, so we only require part+months here.
             parsed.IsValid =
-                !string.IsNullOrWhiteSpace(parsed.PoPath) &&
-                !string.IsNullOrWhiteSpace(parsed.CpiPath) &&
                 !string.IsNullOrWhiteSpace(parsed.PartCode) &&
                 parsed.Months > 0;
 
@@ -97,10 +141,18 @@ namespace ConsoleForeCaster
         private static void PrintUsage()
         {
             Console.WriteLine("Usage:");
-            Console.WriteLine("  dotnet run -- --po <poCsvPath> --cpi <cpiCsvPath> --part <partCode> --months <n> [--currency USD] [--log true|false] [--confidence 0.95]");
+            Console.WriteLine("  dotnet run -- --part <partCode> --months <n> [--currency USD] [--log true|false] [--confidence 0.95] [--po <poCsvPath>] [--cpi <cpiCsvPath>]");
             Console.WriteLine();
-            Console.WriteLine("Example:");
-            Console.WriteLine(@"  dotnet run -- --po ""E:\data\po.csv"" --cpi ""E:\data\cpi.csv"" --part 888012 --months 6 --currency USD --log true --confidence 0.95");
+            Console.WriteLine("Notes:");
+            Console.WriteLine("  Data source is controlled by appsettings.json: DataSource = Csv or Oracle");
+            Console.WriteLine("  In Csv mode you can supply --po/--cpi or set Csv:PoPath/Csv:CpiPath in appsettings.json");
+            Console.WriteLine("  In Oracle mode, --po/--cpi are ignored and Oracle:ConnectionString must be set in appsettings.json");
+            Console.WriteLine();
+            Console.WriteLine("Example (Csv):");
+            Console.WriteLine(@"  dotnet run -- --part 888012 --months 6 --currency USD --log true --confidence 0.95 --po ""E:\data\po.csv"" --cpi ""E:\data\cpi.csv""");
+            Console.WriteLine();
+            Console.WriteLine("Example (Oracle):");
+            Console.WriteLine(@"  dotnet run -- --part 888012 --months 6 --currency USD --log true --confidence 0.95");
         }
 
         // -------------------------------

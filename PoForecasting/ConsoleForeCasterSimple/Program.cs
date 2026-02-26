@@ -1,6 +1,9 @@
-﻿using Core.Domain;
+﻿using Core.Abstractions;
+using Core.Domain;
 using Core.Infrastructure.Csv;
+using Core.Infrastructure.Oracle;
 using Core.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace ConsoleForeCasterSimple
 {
@@ -8,6 +11,8 @@ namespace ConsoleForeCasterSimple
     {
         static void Main(string[] args)
         {
+            var config = BuildConfig();
+
             var parsed = ParseArgs(args);
 
             if (!parsed.IsValid)
@@ -25,9 +30,8 @@ namespace ConsoleForeCasterSimple
                 ConfidenceLevel = 0.95f
             };
 
-            // Repos
-            var poRepo = new CsvPurchaseOrderRepository(parsed.PoPath!);
-            var cpiRepo = new CsvCpiRepository(parsed.CpiPath!);
+            // Repos (Csv or Oracle based on appsettings.json)
+            var (poRepo, cpiRepo) = CreateRepositories(config, parsed.PoPath, parsed.CpiPath);
 
             // Service
             var svc = new PriceForecastService(poRepo, cpiRepo);
@@ -46,15 +50,7 @@ namespace ConsoleForeCasterSimple
             // Current month normalized to first-of-month
             var currentMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
 
-            // We don't know the lastTrainingMonth until we run the forecast,
-            // but the service requires a horizon measured from lastTrainingMonth.
-            //
-            // Strategy:
-            // 1) Run a small "probe" forecast (just to learn lastTrainingMonth) OR
-            // 2) Run once with a conservative upper bound horizon.
-            //
-            // We'll do option 1 cleanly: probe with MinMonthlyPoints horizon (e.g., 1 month) is enough.
-            // BUT service requires months>0; we can probe with 1 month.
+            // Probe forecast (to discover lastTrainingMonth)
             var probe = svc.ForecastNominalPriceNextMonths(
                 parsed.PartCode!,
                 months: 1,
@@ -84,6 +80,7 @@ namespace ConsoleForeCasterSimple
                 .OrderBy(p => p.Month)
                 .ToList();
 
+            // ---- Summary ----
             Console.WriteLine($"PART_CODE={result.PartCode}");
             Console.WriteLine($"Today: {DateTime.Today:yyyy-MM-dd} (current month={currentMonth:yyyy-MM-dd})");
             Console.WriteLine($"Last training month: {result.LastTrainingMonth:yyyy-MM-dd}");
@@ -96,6 +93,7 @@ namespace ConsoleForeCasterSimple
             //Console.WriteLine($"Confidence: 0.95");
             //Console.WriteLine();
 
+            // ---- Data Coverage ----
             Console.WriteLine("---- Data Coverage ----");
             Console.WriteLine($"PO Range:   {Fmt(result.Diagnostics.FirstPoMonth)} --> {Fmt(result.Diagnostics.LastPoMonth)}");
             Console.WriteLine($"CPI Range:  {Fmt(result.Diagnostics.FirstCpiMonth)} --> {Fmt(result.Diagnostics.LastCpiMonth)}");
@@ -105,21 +103,8 @@ namespace ConsoleForeCasterSimple
             Console.WriteLine($"Dropped (no CPI):   {result.Diagnostics.MonthsDroppedDueToMissingCpi}");
             Console.WriteLine();
 
-            //Console.WriteLine("---- Forecast (Nominal PRICE_PER_UNIT) ----");
-            //if (displayPoints.Count == 0)
-            //{
-            //    Console.WriteLine("No forecast points available for the requested window.");
-            //    Console.WriteLine("This can happen if the required horizon exceeds what the service returned or if dates are misaligned.");
-            //    return;
-            //}
-
-            //foreach (var p in displayPoints)
-            //{
-            //    Console.WriteLine($"{p.Month:yyyy-MM-dd}  nominal={p.NominalForecast:F4}  95%=[{p.Lower95Nominal:F4}, {p.Upper95Nominal:F4}]  CPI={p.CpiForecast:F3}  real={p.RealForecast:F4}");
-            //}
-
+            // ---- Previous purchase prices (after Data Coverage, before Forecast) ----
             Console.WriteLine($"---- Previous purchase prices for Part Code {parsed.PartCode} (Price per Unit) ----");
-
             if (lastHistory.Count == 0)
             {
                 Console.WriteLine("No purchase history found for this part code (after currency filter).");
@@ -134,7 +119,7 @@ namespace ConsoleForeCasterSimple
                 Console.WriteLine();
             }
 
-
+            // ---- Forecast output (simple) ----
             Console.WriteLine($"---- Forecast Price for Part Code {result.PartCode} (Nominal PRICE_PER_UNIT + Expected Inflation) in the next {parsed.MonthsAhead} months ----");
 
             if (displayPoints.Count == 0)
@@ -147,6 +132,47 @@ namespace ConsoleForeCasterSimple
             {
                 Console.WriteLine($"{p.Month:yyyy-MM-dd}  Price Prediction={p.NominalForecast:F4}");
             }
+        }
+
+        // -------------------------------
+        // Configuration (appsettings.json)
+        // -------------------------------
+
+        private static IConfiguration BuildConfig()
+        {
+            return new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                .Build();
+        }
+
+        private static (IPurchaseOrderRepository PoRepo, ICpiRepository CpiRepo) CreateRepositories(
+            IConfiguration config,
+            string? poPathFromArgs,
+            string? cpiPathFromArgs)
+        {
+            var source = (config["DataSource"] ?? "Csv").Trim();
+
+            if (source.Equals("Oracle", StringComparison.OrdinalIgnoreCase))
+            {
+                var connStr = config["Oracle:ConnectionString"];
+                if (string.IsNullOrWhiteSpace(connStr))
+                    throw new InvalidOperationException("Missing Oracle:ConnectionString in appsettings.json");
+
+                return (new OraclePurchaseOrderRepository(connStr),
+                        new OracleCpiRepository(connStr));
+            }
+
+            // Default: CSV
+            // Prefer CLI args if provided; otherwise fall back to appsettings.json
+            var poPath = !string.IsNullOrWhiteSpace(poPathFromArgs) ? poPathFromArgs : config["Csv:PoPath"];
+            var cpiPath = !string.IsNullOrWhiteSpace(cpiPathFromArgs) ? cpiPathFromArgs : config["Csv:CpiPath"];
+
+            if (string.IsNullOrWhiteSpace(poPath) || string.IsNullOrWhiteSpace(cpiPath))
+                throw new InvalidOperationException("CSV mode requires Csv:PoPath and Csv:CpiPath in appsettings.json (or pass --po/--cpi).");
+
+            return (new CsvPurchaseOrderRepository(poPath),
+                    new CsvCpiRepository(cpiPath));
         }
 
         // Number of whole months between two first-of-month dates, e.g.
@@ -203,9 +229,8 @@ namespace ConsoleForeCasterSimple
                 }
             }
 
+            // In Csv mode, --po/--cpi can come from appsettings.json, so only require part+months.
             p.IsValid =
-                !string.IsNullOrWhiteSpace(p.PoPath) &&
-                !string.IsNullOrWhiteSpace(p.CpiPath) &&
                 !string.IsNullOrWhiteSpace(p.PartCode) &&
                 p.MonthsAhead > 0;
 
@@ -215,16 +240,24 @@ namespace ConsoleForeCasterSimple
         private static void PrintUsage()
         {
             Console.WriteLine("Usage:");
-            Console.WriteLine("  dotnet run -- --po <poCsvPath> --cpi <cpiCsvPath> --part <partCode> --months <n>");
+            Console.WriteLine("  dotnet run -- --part <partCode> --months <n> [--po <poCsvPath>] [--cpi <cpiCsvPath>]");
             Console.WriteLine();
             Console.WriteLine("Meaning of --months:");
             Console.WriteLine("  Forecast N months ahead of the CURRENT month (not N months after the last training month).");
             Console.WriteLine();
+            Console.WriteLine("Data source:");
+            Console.WriteLine("  Controlled by appsettings.json: DataSource = Csv or Oracle");
+            Console.WriteLine("  Csv mode uses Csv:PoPath and Csv:CpiPath (or pass --po/--cpi).");
+            Console.WriteLine("  Oracle mode uses Oracle:ConnectionString.");
+            Console.WriteLine();
             Console.WriteLine("Defaults (not passed as args):");
             Console.WriteLine("  currency=USD, log=true, confidence=0.95");
             Console.WriteLine();
-            Console.WriteLine("Example:");
-            Console.WriteLine(@"  dotnet run -- --po ""E:\data\po.csv"" --cpi ""E:\data\cpi.csv"" --part 888012 --months 6");
+            Console.WriteLine("Example (Csv):");
+            Console.WriteLine(@"  dotnet run -- --part 888012 --months 6 --po ""E:\data\po.csv"" --cpi ""E:\data\cpi.csv""");
+            Console.WriteLine();
+            Console.WriteLine("Example (Oracle):");
+            Console.WriteLine(@"  dotnet run -- --part 888012 --months 6");
         }
     }
 }
