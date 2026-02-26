@@ -1,5 +1,7 @@
+using Core.Abstractions;
 using Core.Domain;
 using Core.Infrastructure.Csv;
+using Core.Infrastructure.Oracle;
 using Core.Services;
 using Microsoft.Extensions.Options;
 
@@ -16,35 +18,47 @@ namespace ApiPOForecaster
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
-            // Bind file paths from config
-            builder.Services.Configure<DataFilesOptions>(builder.Configuration.GetSection("DataFiles"));
-
-            // OpenAPI (built-in .NET 9)
+            // OpenAPI JSON generator (you already use this)
             builder.Services.AddOpenApi();
 
-            // Explicitly tell the app that the HTTPS port is 5017
-            builder.Services.AddHttpsRedirection(options =>
+            // If you're using SwaggerUI package, keep your existing mapping later.
+
+            // Register repositories based on DataSource (Csv or Oracle)
+            builder.Services.AddSingleton<IPurchaseOrderRepository>(sp =>
             {
-                options.HttpsPort = 5017;
+                var cfg = sp.GetRequiredService<IConfiguration>();
+                return CreatePurchaseOrderRepository(cfg);
             });
+
+            builder.Services.AddSingleton<ICpiRepository>(sp =>
+            {
+                var cfg = sp.GetRequiredService<IConfiguration>();
+                return CreateCpiRepository(cfg);
+            });
+
+            // Register service
+            builder.Services.AddSingleton<PriceForecastService>();
+
+            // Explicit HTTPS redirection setup (keep your logic if you want)
+            builder.Services.AddHttpsRedirection(options => { options.HttpsPort = 5017; });
 
             var app = builder.Build();
 
-            // Map OpenAPI for Dev environments
-            if (app.Environment.IsEnvironment("DevelopmentHTTP") ||
-                app.Environment.IsEnvironment("DevelopmentHTTPS") ||
-                app.Environment.IsDevelopment())
+            // Dev OpenAPI + Swagger UI (your hybrid approach)
+            if (app.Environment.IsDevelopment() ||
+                app.Environment.IsEnvironment("DevelopmentHTTP") ||
+                app.Environment.IsEnvironment("DevelopmentHTTPS"))
             {
-                app.MapOpenApi(); // This generates the /openapi/v1.json
+                app.MapOpenApi(); // /openapi/v1.json
 
+                // If you have Swashbuckle SwaggerUI package, keep this:
                 app.UseSwaggerUI(options =>
                 {
-                    options.SwaggerEndpoint("/openapi/v1.json", "v1");
+                    options.SwaggerEndpoint("/openapi/v1.json", "ApiPOForecaster v1");
                 });
             }
 
-            // Surgical HTTPS Redirection:
-            // ONLY redirect if in HTTPS profile and NOT in Docker
+            // Surgical HTTPS Redirection (same pattern you had)
             if (app.Environment.IsEnvironment("DevelopmentHTTPS") && !app.Environment.IsEnvironment("Docker"))
             {
                 app.UseHttpsRedirection();
@@ -53,24 +67,15 @@ namespace ApiPOForecaster
             // Health
             app.MapGet("/", () => Results.Ok(new { status = "ApiPOForecaster running" }));
 
-            // Forecast endpoint:
+            // Forecast endpoint
             // GET /forecast?partCode=888012&monthsAhead=6
-            app.MapGet("/forecast", (string partCode, int monthsAhead, IOptions<DataFilesOptions> files) =>
+            app.MapGet("/forecast", (string partCode, int monthsAhead, PriceForecastService svc, IPurchaseOrderRepository poRepo) =>
             {
                 if (string.IsNullOrWhiteSpace(partCode))
                     return Results.BadRequest(new { error = "partCode is required." });
 
                 if (monthsAhead <= 0)
                     return Results.BadRequest(new { error = "monthsAhead must be > 0." });
-
-                var poPath = files.Value.PurchaseOrdersCsvPath;
-                var cpiPath = files.Value.CpiCsvPath;
-
-                if (string.IsNullOrWhiteSpace(poPath) || !File.Exists(poPath))
-                    return Results.Problem($"PO CSV file not found. Path='{poPath}'", statusCode: 500);
-
-                if (string.IsNullOrWhiteSpace(cpiPath) || !File.Exists(cpiPath))
-                    return Results.Problem($"CPI CSV file not found. Path='{cpiPath}'", statusCode: 500);
 
                 // Defaults baked in (as requested)
                 const string DefaultCurrency = "USD";
@@ -80,28 +85,32 @@ namespace ApiPOForecaster
                     ConfidenceLevel = 0.95f
                 };
 
-                var poRepo = new CsvPurchaseOrderRepository(poPath);
-                var cpiRepo = new CsvCpiRepository(cpiPath);
-                var svc = new PriceForecastService(poRepo, cpiRepo);
-
                 // Current month = first day of current month
                 var today = DateTime.Today;
                 var currentMonth = new DateTime(today.Year, today.Month, 1);
 
                 // Previous purchase prices (monthly average nominal PRICE_PER_UNIT in USD)
-                var poLines = poRepo.GetLines(partCode, DefaultCurrency);
-                var monthlyNominal = MonthlySeriesBuilder.BuildMonthlyAvgPrice(poLines);
+                List<PreviousPriceDto> previousPrices;
+                try
+                {
+                    var poLines = poRepo.GetLines(partCode, DefaultCurrency);
+                    var monthlyNominal = MonthlySeriesBuilder.BuildMonthlyAvgPrice(poLines);
 
-                var previousPrices = monthlyNominal
-                    .OrderByDescending(x => x.Month)
-                    .Take(10)
-                    .OrderBy(x => x.Month)
-                    .Select(x => new PreviousPriceDto
-                    {
-                        Month = x.Month,
-                        PricePerUnit = x.AvgNominalPrice
-                    })
-                    .ToList();
+                    previousPrices = monthlyNominal
+                        .OrderByDescending(x => x.Month)
+                        .Take(10)
+                        .OrderBy(x => x.Month)
+                        .Select(x => new PreviousPriceDto
+                        {
+                            Month = x.Month,
+                            PricePerUnit = x.AvgNominalPrice
+                        })
+                        .ToList();
+                }
+                catch (Exception ex)
+                {
+                    return Results.BadRequest(new { error = $"Failed to load purchase history: {ex.Message}" });
+                }
 
                 // Probe forecast (learn last training month)
                 ForecastResult probe;
@@ -195,25 +204,59 @@ namespace ApiPOForecaster
             })
             .WithName("ForecastPrice")
             .Produces<ForecastResponseDto>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status500InternalServerError);
+            .Produces(StatusCodes.Status400BadRequest);
 
             app.Run();
         }
 
-        static int MonthsBetween(DateTime fromMonth, DateTime toMonth)
+        // -------------------- Repo factory helpers --------------------
+
+        private static IPurchaseOrderRepository CreatePurchaseOrderRepository(IConfiguration config)
+        {
+            var source = (config["DataSource"] ?? "Csv").Trim();
+
+            if (source.Equals("Oracle", StringComparison.OrdinalIgnoreCase))
+            {
+                var connStr = config["Oracle:ConnectionString"];
+                if (string.IsNullOrWhiteSpace(connStr))
+                    throw new InvalidOperationException("Missing Oracle:ConnectionString in appsettings.json");
+
+                return new OraclePurchaseOrderRepository(connStr);
+            }
+
+            var poPath = config["Csv:PoPath"];
+            if (string.IsNullOrWhiteSpace(poPath))
+                throw new InvalidOperationException("CSV mode requires Csv:PoPath in appsettings.json");
+
+            return new CsvPurchaseOrderRepository(poPath);
+        }
+
+        private static ICpiRepository CreateCpiRepository(IConfiguration config)
+        {
+            var source = (config["DataSource"] ?? "Csv").Trim();
+
+            if (source.Equals("Oracle", StringComparison.OrdinalIgnoreCase))
+            {
+                var connStr = config["Oracle:ConnectionString"];
+                if (string.IsNullOrWhiteSpace(connStr))
+                    throw new InvalidOperationException("Missing Oracle:ConnectionString in appsettings.json");
+
+                return new OracleCpiRepository(connStr);
+            }
+
+            var cpiPath = config["Csv:CpiPath"];
+            if (string.IsNullOrWhiteSpace(cpiPath))
+                throw new InvalidOperationException("CSV mode requires Csv:CpiPath in appsettings.json");
+
+            return new CsvCpiRepository(cpiPath);
+        }
+
+        private static int MonthsBetween(DateTime fromMonth, DateTime toMonth)
         {
             var from = new DateTime(fromMonth.Year, fromMonth.Month, 1);
             var to = new DateTime(toMonth.Year, toMonth.Month, 1);
             return (to.Year - from.Year) * 12 + (to.Month - from.Month);
         }
-    }
-
-    // -------------------- Config options --------------------
-    public sealed class DataFilesOptions
-    {
-        public string PurchaseOrdersCsvPath { get; set; } = "";
-        public string CpiCsvPath { get; set; } = "";
     }
 
     // -------------------- Response DTOs --------------------
